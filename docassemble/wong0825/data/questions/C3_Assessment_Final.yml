@@ -1,0 +1,150 @@
+---
+metadata:
+  title: |
+   Family Information 
+  short title: |
+    Family
+  show login: True
+---
+objects:
+  - KWlogo: DAStaticFile.using(filename='C3_Family.png')
+---
+mandatory: True
+code: |
+  set_parts(logo='<img src="' + KWlogo.url_for() + '" style="height: 50px;">')
+---
+features:
+  css: C3_Assessment.css
+  debug: True
+  hide standard menu: False
+---
+# Data block for each family member 
+variable name: KWperson_info
+use objects: True
+data:
+  - First Name: Kimberly 
+    Last Name: Wong
+    Age: 21
+    Hobbies: Listening to music 
+    Like pets?: False
+  - First Name: Kee Wai
+    Last Name: Wong 
+    Age: 54
+    Hobbies: Gardening 
+    Like pets?: True
+  - First Name: Joanna 
+    Last Name: Lew
+    Age: 53
+    Hobbies: Watching movies
+    Like pets?: False
+  - First Name: Michelle
+    Last Name: Wong
+    Age: 24
+    Hobbies: Playing piano 
+    Like pets?: True
+  - First Name: Rachelle 
+    Last Name: Wong 
+    Age: 19
+    Hobbies: Playing violin 
+    Like pets?: True
+  - First Name: Samantha
+    Last Name: Wong 
+    Age: 19 
+    Hobbies: Watch movies
+    Like pets?: False
+---
+mandatory: True
+question: Family Information 
+subquestion:  |
+  Here is the information collected for each family member. 
+  
+  ${ KWcolumn_header }
+  ${ KWdashes }
+  %for KWitem in KWtable_rows:
+  ${ KWitem }
+  %endfor
+
+  You will be asked to confirm whether each piece of information is correct. 
+
+buttons: 
+  - Continue: continue
+  - Exit: exit 
+  - Restart: restart
+---
+# Create the column headers in this code block.
+code: |
+  KWcolumn_header = ""
+  
+  # Access the first list element and iterate through its keys
+  for KWitem in KWperson_info[0]:
+    KWcolumn_header += KWitem + '|'
+  
+  # This strip off the last vertical bar. 
+  KWcolumn_header = KWcolumn_header[:-1]
+---
+# Create the dashes for the table header 
+code: |
+  # We iterate up to one short of the length of the dictionary.
+  # That's because we don't want to display a tralining pipe
+  KWdashes = "---"
+  for i in range(len(KWperson_info[0]) - 1):
+    KWdashes += "|---"
+---
+# This construct a list for display as the rows of the table.  
+code: | 
+  KWtable_rows = []
+  for KWitem in KWperson_info:
+      MDrow = ""
+      for KWkey in KWitem:
+        MDrow += str(KWitem[KWkey]) + '|'
+      MDrow = MDrow[:-1]
+      KWtable_rows.append(MDrow)
+---
+# format
+mandatory: True
+code: |
+  for KWitem in KWperson_info:
+    KWitem['KWchoices'] = []
+    for KWkey in KWitem: 
+      if KWkey != 'KWchoices':
+        KWitem['KWchoices'].append("**{}** : {}".format(KWkey, KWitem[KWkey]))
+---
+table: KWconfirm_table
+rows: KWperson_info
+columns: 
+  - First Name: |
+      row_item['First Name']
+  - Last Name: |
+      row_item['Last Name']
+  - Age:  |
+      row_item['Age']
+  - Hobbies:  |
+      row_item['Hobbies']
+  - Like pets?:  |
+      row_item['Like pets?']
+  - Correct Data: |
+      row_item['KWquestions'].true_values()
+---
+question: |
+  Are the following details of ${ KWperson_info[i]['First Name'] } correct? 
+
+fields:
+ - no label: KWperson_info[i]['KWquestions']
+   datatype: checkboxes
+   code: KWperson_info[i]['KWchoices']
+---
+mandatory: True
+question:  Personal Information of Family Members 
+subquestion: |
+  The following table is the validated information collected for each family member. 
+ 
+  ${ KWconfirm_table }
+attachment:
+  - name: Personal Information of Family Members Document
+    filename: Family_member
+    valid formats:
+    - pdf
+    content: |
+     **Family Members Information**
+     ${ KWconfirm_table }
+---
